@@ -28,7 +28,7 @@ implementation {
   }
 
   command void CarC.Start() {
-
+    call AMControl.start()
   }
 
   command error_t CarC.Angle(uint16_t value) {
@@ -59,7 +59,7 @@ implementation {
 
   }
   event void CarC.readDone(error_t state, uint16_t value) {
-    
+
   }
   command error_t CarC.InitMaxSpeed(uint16_t value) {
 
