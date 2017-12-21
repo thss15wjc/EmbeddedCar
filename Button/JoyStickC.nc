@@ -1,7 +1,6 @@
-#include "JoyStick.h"
 #include <Msp430Adc12.h>
 
-generic configuration JoyStickAppC {
+configuration JoyStickC {
   provides interface Read<uint16_t> as ReadX;
   provides interface Read<uint16_t> as ReadY;
 }
