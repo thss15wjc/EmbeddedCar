@@ -24,10 +24,10 @@ implementation {
     sampcon_ssel: SAMPCON_SOURCE_SMCLK,
     sampcon_id: SAMPCON_CLOCK_DIV_1
   };
-  async command const msp430adc12_channel_config_t* AdcConfigureX.getConfiguration {
+  async command const msp430adc12_channel_config_t* AdcConfigureX.getConfiguration() {
     return &configX;
   }
-  async command const msp430adc12_channel_config_t* AdcConfigureY.getConfiguration {
+  async command const msp430adc12_channel_config_t* AdcConfigureY.getConfiguration() {
     return &configY;
   }
 }

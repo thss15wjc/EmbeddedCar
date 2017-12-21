@@ -1,0 +1,2 @@
+COMPONENT=ControllerAppC
+include $(MAKERULES)
