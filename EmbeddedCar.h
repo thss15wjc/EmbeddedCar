@@ -11,14 +11,14 @@ enum {
     PORT_D_BIT = 0x8,
     PORT_E_BIT = 0x16,
     PORT_F_BIT = 0x32,
-    ANGLE_1_BIT = 0x01,
-    ANGLE_2_BIT = 0x07,
-    ANGLE_3_BIT = 0x08,
-    FORWARD_BIT = 0x02,
-    BACK_BIT = 0x03,
-    LEFT_BIT = 0x04,
-    RIGHT_BIT = 0x05,
-    PAUSE_BIT = 0x06
+    TYPE_ANGLE_1 = 0x01,
+    TYPE_ANGLE_2 = 0x07,
+    TYPE_ANGLE_3 = 0x08,
+    TYPE_FORWARD = 0x02,
+    TYPE_BACK = 0x03,
+    TYPE_LEFT = 0x04,
+    TYPE_RIGHT = 0x05,
+    TYPE_PAUSE = 0x06
 };
 
 typedef nx_struct DataMsg {
