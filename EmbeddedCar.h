@@ -10,7 +10,15 @@ enum {
     PORT_C_BIT = 0x4,
     PORT_D_BIT = 0x8,
     PORT_E_BIT = 0x16,
-    PORT_F_BIT = 0x32
+    PORT_F_BIT = 0x32,
+    ANGLE_1_BIT = 0x01,
+    ANGLE_2_BIT = 0x07,
+    ANGLE_3_BIT = 0x08,
+    FORWARD_BIT = 0x02,
+    BACK_BIT = 0x03,
+    LEFT_BIT = 0x04,
+    RIGHT_BIT = 0x05,
+    PAUSE_BIT = 0x06
 };
 
 typedef nx_struct DataMsg {

@@ -1,19 +1,22 @@
-#include <Timer.h>
-#include "BlinkToRadio.h"
+#include "../EmbeddedCar.h"
+#include "Timer.h"
 
-configuration CarAppC {
-
+configuration BlinkToRadioAppC {
 }
 
 implementation {
   components MainC;
   components BlinkToRadioC as App;
-  components new TimerMilliC() as Timer;
   components ActiveMessageC;
-  components new AMReceiverC(AM_CAR_RECEIVE);
+  components new TimerMilliC() as Timer0;
+  components new Receive(AMSenderC);
+  components CarAppC;
 
   App.Boot -> MainC;
-  App.Timer -> Timer;
   App.AMControl -> ActiveMessageC;
-  App.Receive ->  AMReceiverC;
+  App.Packet ->  AMSenderC;
+  App.AMPacket -> AMSenderC;
+  App.AMSend -> AMSenderC;
+  App.Timer0 -> Timer0;
+  App.Car -> CarAppC.Car;
 }

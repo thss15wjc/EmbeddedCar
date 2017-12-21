@@ -1,5 +1,3 @@
-#include "Car.c"
-
 module CarC {
   uses interface Receive;
   uses interface SplitControl as AMControl;
@@ -7,7 +5,7 @@ module CarC {
   uses interface HplMsp430GeneralIO as GIO;
   uses interface Resource as UsartResource[uint16_t id];
   uses interface HplMsp430UsartInterrupts as UsartInterrupts[uint8_t id];
-  uses interface CarC;
+  provides interface Car;
   provides interface setModeUart<const msp430_uart_union_config_t*> as setModeUart;
 }
 
@@ -32,94 +30,80 @@ implementation {
     utxe: 1,
     urxe: 1
   };
-  event void Boot.booted() {
-    call AMControl.start();
+
+  command void Car.Start() {
+    call UsartResource[value].request();
+    signal UsartResource.granted[value]();
+    signal Car.startDone(SUCCESS);
   }
 
-  event void AMControl.startDone(error_t err) {
-    if (err == SUCCESS) {
-    }
-    else {
-      call AMControl.start();
-    }
-  }
-
-  event void AMControl.stopDone(error_t err) {
-  }
-
-  command void CarC.Start() {
+  command error_t Car.Angle(uint16_t value) {
     call UsartResource[value].request();
     signal UsartResource.granted[value]();
     return SUCCESS;
   }
-
-  command error_t CarC.Angle(uint16_t value) {
+  command error_t Car.Angle_Senc(uint16_t value) {
     call UsartResource[value].request();
     signal UsartResource.granted[value]();
     return SUCCESS;
   }
-  command error_t CarC.Angle_Senc(uint16_t value) {
+  command error_t Car.Angle_Third(uint16_t value) {
     call UsartResource[value].request();
     signal UsartResource.granted[value]();
     return SUCCESS;
   }
-  command error_t CarC.Angle_Third(uint16_t value) {
+  command error_t Car.Forward(uint16_t value) {
     call UsartResource[value].request();
     signal UsartResource.granted[value]();
     return SUCCESS;
   }
-  command error_t CarC.Forward(uint16_t value) {
+  command error_t Car.Back(uint16_t value) {
     call UsartResource[value].request();
     signal UsartResource.granted[value]();
     return SUCCESS;
   }
-  command error_t CarC.Back(uint16_t value) {
+  command error_t Car.Left(uint16_t value) {
     call UsartResource[value].request();
     signal UsartResource.granted[value]();
     return SUCCESS;
   }
-  command error_t CarC.Left(uint16_t value) {
+  command error_t Car.Right(uint16_t value) {
     call UsartResource[value].request();
     signal UsartResource.granted[value]();
     return SUCCESS;
   }
-  command error_t CarC.Right(uint16_t value) {
+  command error_t Car.QuiryReader(uint8_t value) {
     call UsartResource[value].request();
     signal UsartResource.granted[value]();
     return SUCCESS;
   }
-  command error_t CarC.QuiryReader(uint8_t value) {
+  command error_t Car.Pause() {
     call UsartResource[value].request();
     signal UsartResource.granted[value]();
     return SUCCESS;
   }
-  command error_t CarC.Pause() {
-    call UsartResource[value].request();
-    signal UsartResource.granted[value]();
-    return SUCCESS;
-  }
-  event void CarC.readDone(error_t state, uint16_t value) {
+  event void Car.readDone(error_t state, uint16_t value) {
     if (state == SUCCESS) {
       call UsartResource[value].request();
       signal UsartResource.granted[value]();
     }
   }
-  command error_t CarC.InitMaxSpeed(uint16_t value) {
+  command error_t Car.InitMaxSpeed(uint16_t value) {
     call UsartResource[value].request();
     signal UsartResource.granted[value]();
     return SUCCESS;
   }
-  command error_t CarC.InitMinSpeed(uint16_t value) {
+  command error_t Car.InitMinSpeed(uint16_t value) {
     call UsartResource[value].request();
     signal UsartResource.granted[value]();
     return SUCCESS;
   }
-  command error_t CarC.InitLeftServo(uint16_t value) {
+  command error_t Car.InitLeftServo(uint16_t value) {
     call UsartResource[value].request();
     signal UsartResource.granted[value]();
     return SUCCESS;
   }
-  command error_t CarC.InitMidServo(uint16_t value) {
+  command error_t Car.InitMidServo(uint16_t value) {
     call UsartResource[value].request();
     signal UsartResource.granted[value]();
     return SUCCESS;
