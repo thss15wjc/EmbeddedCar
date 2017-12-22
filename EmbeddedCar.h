@@ -4,6 +4,7 @@
 enum {
     ID_CAR = 0xcc,
     TIMER_PERIOD_MILLI = 100,
+    TIMER_CAR = 3000;
     AM_DATAMSG = 0xce,
     PORT_A_BIT = 0x1,
     PORT_B_BIT = 0x2,

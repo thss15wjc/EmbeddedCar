@@ -1,4 +1,5 @@
 #include <msp430usart.h>
+#include <Timer.h>
 
 module CarC {
   uses interface HplMsp430Usart;
@@ -6,10 +7,12 @@ module CarC {
   uses interface Resource;
   uses interface HplMsp430UsartInterrupts;
   provides interface Car;
+  uses interface Timer<TMilli> as Timer0;
 }
 
 implementation {
   uint8_t command_type;
+  uint8_t count = 0;
   uint16_t command_value;
   bool isBusy = TRUE;
   uint8_t sending_state;
@@ -38,6 +41,23 @@ implementation {
   command void Car.Start() {
     isBusy = FALSE;
     sending_state = 0;
+    call Timer0.startPeriodic(TIMER_CAR);
+  }
+
+  event void Timer0.fired() {
+    count++;
+    count = count % 5;
+    if (count == 1) {
+      call Car.Forward(500);
+    } else if (count == 2) {
+      call Car.Back(500);
+    } else if (count == 3) {
+      call Car.Left(500);
+    } else if (count == 4) {
+      call Car.Right(500);
+    } else if (count == 0) {
+      call Car.Pause();
+    }
   }
 
   command error_t Car.Angle(uint16_t value) {
