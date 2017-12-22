@@ -54,35 +54,35 @@ implementation {
   }
 
   command void Button.pinvalueB() {
-    signal Button.pinvalueADone(call PortB.get());
+    signal Button.pinvalueBDone(call PortB.get());
   }
 
   default event void Button.pinvalueBDone(error_t error) {
   }
 
   command void Button.pinvalueC() {
-    signal Button.pinvalueADone(call PortC.get());
+    signal Button.pinvalueCDone(call PortC.get());
   }
 
   default event void Button.pinvalueCDone(error_t error) {
   }
 
   command void Button.pinvalueD() {
-    signal Button.pinvalueADone(call PortD.get());
+    signal Button.pinvalueDDone(call PortD.get());
   }
 
   default event void Button.pinvalueDDone(error_t error) {
   }
 
   command void Button.pinvalueE() {
-    signal Button.pinvalueADone(call PortE.get());
+    signal Button.pinvalueEDone(call PortE.get());
   }
 
   default event void Button.pinvalueEDone(error_t error) {
   }
 
   command void Button.pinvalueF() {
-    signal Button.pinvalueADone(call PortF.get());
+    signal Button.pinvalueFDone(call PortF.get());
   }
 
   default event void Button.pinvalueFDone(error_t error) {

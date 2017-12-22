@@ -71,26 +71,7 @@ implementation {
   }
 
   command error_t Car.Forward(uint16_t value) {
-    command_type = TYPE_FORWARD;
-    command_value = value;
-    if (!isBusy) {
-      call Resource.request();
-      isBusy = TRUE;
-    }
-    return SUCCESS;
-  }
-
-  command error_t Car.Back(uint16_t value) {
-    command_type = TYPE_BACK;
-    command_value = value;
-    if (!isBusy) {
-      call Resource.request();
-      isBusy = TRUE;
-    }
-    return SUCCESS;
-  }
-
-  command error_t Car.Left(uint16_t value) {
+    //command_type = TYPE_FORWARD;
     command_type = TYPE_LEFT;
     command_value = value;
     if (!isBusy) {
@@ -100,8 +81,31 @@ implementation {
     return SUCCESS;
   }
 
-  command error_t Car.Right(uint16_t value) {
+  command error_t Car.Back(uint16_t value) {
+    //command_type = TYPE_BACK;
     command_type = TYPE_RIGHT;
+    command_value = value;
+    if (!isBusy) {
+      call Resource.request();
+      isBusy = TRUE;
+    }
+    return SUCCESS;
+  }
+
+  command error_t Car.Left(uint16_t value) {
+    //command_type = TYPE_LEFT;
+    command_type = TYPE_BACK;
+    command_value = value;
+    if (!isBusy) {
+      call Resource.request();
+      isBusy = TRUE;
+    }
+    return SUCCESS;
+  }
+
+  command error_t Car.Right(uint16_t value) {
+    //command_type = TYPE_RIGHT;
+    command_type = TYPE_FORWARD;
     command_value = value;
     if (!isBusy) {
       call Resource.request();
@@ -147,10 +151,10 @@ implementation {
   void send_command() {
     switch (sending_state) {
     case 0:
-      call HplMsp430Usart.tx(0x01);
+      call HplMsp430Usart.tx(1);
       break;
     case 1:
-      call HplMsp430Usart.tx(0x02);
+      call HplMsp430Usart.tx(2);
       break;
     case 2:
       call HplMsp430Usart.tx(command_type);

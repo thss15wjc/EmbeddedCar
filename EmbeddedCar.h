@@ -2,28 +2,33 @@
 #define EMBEDDEDCAR_H
 
 enum {
-    ID_CAR = 0xcc,
-    TIMER_PERIOD_MILLI = 100,
+    ID_CAR = 31,
+    TIMER_PERIOD_MILLI = 50,
     AM_DATAMSG = 0xce,
-    PORT_A_BIT = 0x1,
-    PORT_B_BIT = 0x2,
-    PORT_C_BIT = 0x4,
-    PORT_D_BIT = 0x8,
-    PORT_E_BIT = 0x16,
-    PORT_F_BIT = 0x32,
-    TYPE_ANGLE_1 = 0x01,
-    TYPE_ANGLE_2 = 0x07,
-    TYPE_ANGLE_3 = 0x08,
-    TYPE_FORWARD = 0x02,
-    TYPE_BACK = 0x03,
-    TYPE_LEFT = 0x04,
-    TYPE_RIGHT = 0x05,
-    TYPE_PAUSE = 0x06
+    PORT_A_BIT = 1,
+    PORT_B_BIT = 2,
+    PORT_C_BIT = 4,
+    PORT_D_BIT = 8,
+    PORT_E_BIT = 16,
+    PORT_F_BIT = 32,
+    TYPE_ANGLE_1 = 1,
+    TYPE_ANGLE_2 = 7,
+    TYPE_ANGLE_3 = 8,
+    TYPE_FORWARD = 2,
+    TYPE_BACK = 3,
+    TYPE_LEFT = 4,
+    TYPE_RIGHT = 5,
+    TYPE_PAUSE = 6,
+    STICK_LEFT = 1,
+    STICK_RIGHT = 2,
+    STICK_NONE = 0,
+    STICK_FORWARD = 1,
+    STICK_BACK = 2
 };
 
 typedef nx_struct DataMsg {
-  nx_uint16_t JoyStickX;
-  nx_uint16_t JoyStickY;
+  nx_uint8_t JoyStickX;
+  nx_uint8_t JoyStickY;
   nx_uint8_t buttonState;
 } DataMsg;
 
