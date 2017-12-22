@@ -11,7 +11,13 @@ module CarC {
 implementation {
   uint8_t command_type;
   uint16_t command_value;
-  bool isBusy = TRUE;
+  /*CommandMsg cmdBuf[COMMANDMSG_BUF_LEN];
+  CommandMsg curMsg, sendMsg;
+  uint8_t cmdIn = 0;
+  uint8_t cmdOut = 0;*/
+  bool cmdBusy = TRUE;
+  //bool cmdFull = TRUE;
+
   uint8_t sending_state;
   msp430_uart_union_config_t config1 = {
     {
@@ -36,26 +42,40 @@ implementation {
   };
 
   command void Car.Start() {
-    isBusy = FALSE;
+    /*cmdIn = 0;
+    cmdOut = 0;*/
+    cmdBusy = FALSE;
+    /*cmdFull = FALSE;*/
     sending_state = 0;
   }
 
   command error_t Car.Angle(uint16_t value) {
     command_type = TYPE_ANGLE_1;
     command_value = value;
-    if (!isBusy) {
+    if (!cmdBusy) {
       call Resource.request();
-      isBusy = TRUE;
+      cmdBusy = TRUE;
     }
+    /*if (!cmdFull) {
+      cmdBuf[cmdIn] = curMsg;
+      cmdIn = (cmdIn + 1) % COMMANDMSG_BUF_LEN;
+      if (cmdIn == cmdOut) {
+        cmdFull = TRUE;
+      }
+      if (!cmdBusy) {
+        call Resource.request();
+        cmdBusy = TRUE;
+      }
+    }*/
     return SUCCESS;
   }
 
   command error_t Car.Angle_Senc(uint16_t value) {
     command_type = TYPE_ANGLE_2;
     command_value = value;
-    if (!isBusy) {
+    if (!cmdBusy) {
       call Resource.request();
-      isBusy = TRUE;
+      cmdBusy = TRUE;
     }
     return SUCCESS;
   }
@@ -63,9 +83,9 @@ implementation {
   command error_t Car.Angle_Third(uint16_t value) {
     command_type = TYPE_ANGLE_3;
     command_value = value;
-    if (!isBusy) {
+    if (!cmdBusy) {
       call Resource.request();
-      isBusy = TRUE;
+      cmdBusy = TRUE;
     }
     return SUCCESS;
   }
@@ -74,9 +94,9 @@ implementation {
     //command_type = TYPE_FORWARD;
     command_type = TYPE_LEFT;
     command_value = value;
-    if (!isBusy) {
+    if (!cmdBusy) {
       call Resource.request();
-      isBusy = TRUE;
+      cmdBusy = TRUE;
     }
     return SUCCESS;
   }
@@ -85,9 +105,9 @@ implementation {
     //command_type = TYPE_BACK;
     command_type = TYPE_RIGHT;
     command_value = value;
-    if (!isBusy) {
+    if (!cmdBusy) {
       call Resource.request();
-      isBusy = TRUE;
+      cmdBusy = TRUE;
     }
     return SUCCESS;
   }
@@ -96,9 +116,9 @@ implementation {
     //command_type = TYPE_LEFT;
     command_type = TYPE_BACK;
     command_value = value;
-    if (!isBusy) {
+    if (!cmdBusy) {
       call Resource.request();
-      isBusy = TRUE;
+      cmdBusy = TRUE;
     }
     return SUCCESS;
   }
@@ -107,9 +127,9 @@ implementation {
     //command_type = TYPE_RIGHT;
     command_type = TYPE_FORWARD;
     command_value = value;
-    if (!isBusy) {
+    if (!cmdBusy) {
       call Resource.request();
-      isBusy = TRUE;
+      cmdBusy = TRUE;
     }
     return SUCCESS;
   }
@@ -121,9 +141,9 @@ implementation {
   command error_t Car.Pause() {
     command_type = TYPE_PAUSE;
     command_value = 0;
-    if (!isBusy) {
+    if (!cmdBusy) {
       call Resource.request();
-      isBusy = TRUE;
+      cmdBusy = TRUE;
     }
     return SUCCESS;
   }
@@ -146,6 +166,20 @@ implementation {
 
   command error_t Car.InitMidServo(uint16_t value) {
     return SUCCESS;
+  }
+
+  void send_command();
+
+  void prepare_command() {
+    call HplMsp430Usart.setModeUart(&config1);
+    call HplMsp430Usart.enableUart();
+    U0CTL &= ~SYNC;
+    sending_state = 0;
+    //sendMsg = cmdBuf[cmdOut];
+    send_command();
+    call Resource.release();
+    cmdBusy = FALSE;
+    signal Car.sendDone(SUCCESS);
   }
 
   void send_command() {
@@ -175,7 +209,6 @@ implementation {
       call HplMsp430Usart.tx(0x00);
       break;
     default:
-      isBusy = FALSE;
       break;
     }
     ++sending_state;
@@ -186,8 +219,17 @@ implementation {
       send_command();
     }
     else {
+      /*call Resource.release();
       signal Car.sendDone(SUCCESS);
-      isBusy = FALSE;
+      cmdOut = (cmdOut + 1) % COMMANDMSG_BUF_LEN;
+      if (cmdFull) {
+        cmdFull = FALSE;
+      }
+      if (cmdIn == cmdOut && !cmdFull) {
+        cmdBusy = FALSE;
+        return;
+      }
+      prepare_command();*/
     }
   }
 
@@ -206,11 +248,6 @@ implementation {
   }
 
   event void Resource.granted() {
-    call HplMsp430Usart.setModeUart(&config1);
-    call HplMsp430Usart.enableUart();
-    U0CTL &= ~SYNC;
-    sending_state = 0;
-    send_command();
-    call Resource.release();
+    prepare_command();
   }
 }

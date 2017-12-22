@@ -23,8 +23,14 @@ enum {
     STICK_RIGHT = 2,
     STICK_NONE = 0,
     STICK_FORWARD = 1,
-    STICK_BACK = 2
+    STICK_BACK = 2,
+    //COMMANDMSG_BUF_LEN = 12
 };
+
+/*typedef nx_struct CommandMsg {
+  nx_uint8_t type;
+  nx_uint16_t value;
+} CommandMsg;*/
 
 typedef nx_struct DataMsg {
   nx_uint8_t JoyStickX;

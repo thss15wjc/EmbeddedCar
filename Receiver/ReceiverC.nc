@@ -39,35 +39,38 @@ implementation {
       uint8_t joyY = dataMsg->JoyStickY;
     	printf("JoyStickX:%u, JoyStickY: %u, ButtonState: %u\n", dataMsg->JoyStickX, dataMsg->JoyStickY, dataMsg->buttonState);
     	printfflush();
-      call Leds.led1Toggle();
-      if (state & PORT_E_BIT) {
+      //call Leds.led1Toggle();
+      if (state & PORT_C_BIT) {
         call Car.Pause();
       }
       else if (state & PORT_A_BIT) {
-        call Car.Angle(2700);
+        call Car.Angle(700);
       }
       else if (state & PORT_B_BIT) {
-        call Car.Angle_Senc(2700);
+        call Car.Angle(4300);
       }
-      else if (state & PORT_C_BIT) {
-        call Car.Angle_Third(2700);
+      else if (state & PORT_E_BIT) {
+        call Car.Angle_Senc(700);
+      }
+      else if (state & PORT_F_BIT) {
+        call Car.Angle_Senc(4300);
       }
       else {
-        if (joyX & STICK_LEFT) {
-          call Car.Left(500);
-        }
-        else if (joyX & STICK_RIGHT) {
-          call Car.Right(500);
+        if (joyY == STICK_NONE && joyX == STICK_NONE) {
+          call Car.Pause();
         }
         else {
-          if (joyY & STICK_FORWARD) {
+          if (joyX == STICK_LEFT) {
+            call Car.Left(500);
+          }
+          else if (joyX == STICK_RIGHT) {
+            call Car.Right(500);
+          }
+          if (joyY == STICK_FORWARD) {
             call Car.Forward(500);
           }
-          else if (joyY & STICK_BACK) {
+          else if (joyY == STICK_BACK) {
             call Car.Back(500);
-          }
-          else {
-            call Car.Pause();
           }
         }
       }
