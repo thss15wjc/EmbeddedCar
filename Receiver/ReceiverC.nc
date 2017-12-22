@@ -3,6 +3,7 @@
 
 module ReceiverC {
   uses interface Boot;
+  uses interface Leds;
   uses interface Receive;
   uses interface SplitControl as AMControl;
   uses interface Car;
@@ -18,6 +19,7 @@ implementation {
   event void AMControl.startDone(error_t err) {
     if (err == SUCCESS) {
       call Car.Start();
+      call Leds.led0On();
     }
     else {
       call AMControl.start();
@@ -31,6 +33,7 @@ implementation {
     if (len == sizeof(DataMsg)) {
       DataMsg* dataMsg = (DataMsg*)payload;
       uint8_t state = dataMsg->buttonState;
+      call Leds.led1Toggle();
       if (state & PORT_A_BIT) {
         call Car.Forward(500);
       }
@@ -51,5 +54,13 @@ implementation {
       }
     }
     return msg;
+  }
+
+  event void Car.sendDone(error_t state) {
+    call Leds.led2Toggle();
+  }
+
+  async event void Car.debug() {
+    call Leds.led0Toggle();
   }
 }

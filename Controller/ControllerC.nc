@@ -3,6 +3,7 @@
 
 module ControllerC {
   uses interface Boot;
+  uses interface Leds;
   uses interface AMSend;
   uses interface AMPacket;
   uses interface Packet;
@@ -29,6 +30,7 @@ implementation {
     DataMsg * collectPacket;
     if (check_change()) {
       oldPkt = curPkt;
+      call Leds.led2Toggle();
       collectPacket = (DataMsg*)(call Packet.getPayload(&pkt, sizeof(DataMsg)));
       if (collectPacket == NULL) {
         return;

@@ -124,9 +124,6 @@ implementation {
     return SUCCESS;
   }
 
-  /*default event void Car.readDone(error_t state, uint16_t value) {
-  }*/
-
   command error_t Car.InitMaxSpeed(uint16_t value) {
     return SUCCESS;
   }
@@ -181,18 +178,23 @@ implementation {
       send_command();
     }
     else {
+      signal Car.sendDone(SUCCESS);
       isBusy = FALSE;
     }
   }
 
+  default event void Car.sendDone(error_t state) {
+  }
+
+  default async event void Car.debug() {
+  }
+
   async event void HplMsp430UsartInterrupts.txDone() {
-    //send_command();
-    // TODO
+    signal Car.debug();
   }
 
   async event void HplMsp430UsartInterrupts.rxDone(uint8_t data) {
-    //send_command();
-    // TODO
+    // NOTHING TODO
   }
 
   event void Resource.granted() {

@@ -6,6 +6,7 @@ configuration ReceiverAppC {
 
 implementation {
   components MainC;
+  components LedsC;
   components ReceiverC as App;
   components ActiveMessageC;
   components new AMReceiverC(AM_DATAMSG);
@@ -15,4 +16,5 @@ implementation {
   App.AMControl -> ActiveMessageC;
   App.Receive -> AMReceiverC;
   App.Car -> CarAppC.Car;
+  App.Leds -> LedsC;
 }

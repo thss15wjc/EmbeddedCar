@@ -6,6 +6,7 @@ configuration ControllerAppC {
 
 implementation {
   components MainC;
+  components LedsC;
   components ControllerC as App;
   components ActiveMessageC;
   components new TimerMilliC() as Timer0;
@@ -14,6 +15,7 @@ implementation {
   components ButtonAppC;
 
   App.Boot -> MainC;
+  App.Leds -> LedsC;
   App.AMControl -> ActiveMessageC;
   App.Packet ->  AMSenderC;
   App.AMPacket -> AMSenderC;
