@@ -136,6 +136,10 @@ implementation {
     return SUCCESS;
   }
 
+  command error_t Car.InitRightServo(uint16_t value) {
+    return SUCCESS;
+  }
+
   command error_t Car.InitMidServo(uint16_t value) {
     return SUCCESS;
   }
@@ -172,7 +176,7 @@ implementation {
     }
     ++sending_state;
     if (sending_state < 8) {
-      while (!(call HplMsp430Usart.isTxEmpty())) {
+      while (!(call HplMsp430Usart.isTxEmpty() == SUCCESS)) {
         // NOTHING TODO
       }
       send_command();

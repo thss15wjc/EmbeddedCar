@@ -29,6 +29,8 @@ implementation {
   void SendPacket() {
     DataMsg * collectPacket;
     if (check_change()) {
+    	printf("JoyStickX:%u, JoyStickY: %u, ButtonState: 0x%x\n", curPkt.JoyStickX, curPkt.JoyStickY, curPkt.buttonState);
+    	printfflush();
       oldPkt = curPkt;
       call Leds.led2Toggle();
       collectPacket = (DataMsg*)(call Packet.getPayload(&pkt, sizeof(DataMsg)));

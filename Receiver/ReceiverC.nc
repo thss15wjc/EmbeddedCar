@@ -33,6 +33,8 @@ implementation {
     if (len == sizeof(DataMsg)) {
       DataMsg* dataMsg = (DataMsg*)payload;
       uint8_t state = dataMsg->buttonState;
+    	printf("JoyStickX:%u, JoyStickY: %u, ButtonState: 0x%x\n", dataMsg->JoyStickX, dataMsg->JoyStickY, dataMsg->buttonState);
+    	printfflush();
       call Leds.led1Toggle();
       if (state & PORT_A_BIT) {
         call Car.Forward(500);
@@ -50,7 +52,7 @@ implementation {
         call Car.Pause();
       }
       else if (state & PORT_F_BIT) {
-
+        call Car.Angle(3000);
       }
     }
     return msg;

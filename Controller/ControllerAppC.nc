@@ -1,5 +1,6 @@
 #include "../EmbeddedCar.h"
 #include "Timer.h"
+#include "printf.h"
 
 configuration ControllerAppC {
 }
@@ -13,6 +14,9 @@ implementation {
   components new AMSenderC(AM_DATAMSG);
   components JoyStickC;
   components ButtonAppC;
+
+  components PrintfC;
+  components SerialStartC;
 
   App.Boot -> MainC;
   App.Leds -> LedsC;

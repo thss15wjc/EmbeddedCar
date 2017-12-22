@@ -15,5 +15,6 @@ interface Car {
   command error_t InitMaxSpeed(uint16_t value);
   command error_t InitMinSpeed(uint16_t value);
   command error_t InitLeftServo(uint16_t value);
+  command error_t InitRightServo(uint16_t value);
   command error_t InitMidServo(uint16_t value);
 }

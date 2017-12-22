@@ -1,5 +1,6 @@
 #include "../EmbeddedCar.h"
 #include <msp430usart.h>
+#include "printf.h"
 
 configuration ReceiverAppC {
 }
@@ -11,6 +12,9 @@ implementation {
   components ActiveMessageC;
   components new AMReceiverC(AM_DATAMSG);
   components CarAppC;
+
+  components PrintfC;
+  components SerialStartC;
 
   App.Boot -> MainC;
   App.AMControl -> ActiveMessageC;
