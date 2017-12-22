@@ -1,4 +1,5 @@
 #include "../EmbeddedCar.h"
+#include <Timer.h>
 #include <msp430usart.h>
 #include "printf.h"
 
@@ -12,6 +13,7 @@ implementation {
   components ActiveMessageC;
   components new AMReceiverC(AM_DATAMSG);
   components CarAppC;
+  components new TimerMilliC() as Timer0;
 
   components PrintfC;
   components SerialStartC;
@@ -21,4 +23,5 @@ implementation {
   App.Receive -> AMReceiverC;
   App.Car -> CarAppC.Car;
   App.Leds -> LedsC;
+  App.Timer0 -> Timer0;
 }

@@ -20,7 +20,8 @@ implementation {
   DataMsg oldPkt;
   bool buttonBusy = TRUE;
 
-  bool check_change() {
+  bool check_send() {
+    //return !(curPkt.buttonState == oldPkt.buttonState);
     return !(curPkt.JoyStickX == oldPkt.JoyStickX &&
        curPkt.JoyStickY == oldPkt.JoyStickY &&
        curPkt.buttonState == oldPkt.buttonState);
@@ -28,10 +29,10 @@ implementation {
 
   void SendPacket() {
     DataMsg * collectPacket;
-    if (check_change()) {
-    	printf("JoyStickX:%u, JoyStickY: %u, ButtonState: 0x%x\n", curPkt.JoyStickX, curPkt.JoyStickY, curPkt.buttonState);
-    	printfflush();
+    if (check_send()) {
       oldPkt = curPkt;
+    	printf("JoyStickX:%u, JoyStickY: %u, ButtonState: %u\n", curPkt.JoyStickX, curPkt.JoyStickY, curPkt.buttonState);
+    	printfflush();
       call Leds.led2Toggle();
       collectPacket = (DataMsg*)(call Packet.getPayload(&pkt, sizeof(DataMsg)));
       if (collectPacket == NULL) {
@@ -40,7 +41,7 @@ implementation {
       collectPacket->JoyStickX = curPkt.JoyStickX;
       collectPacket->JoyStickY = curPkt.JoyStickY;
       collectPacket->buttonState = curPkt.buttonState;
-      call AMSend.send(ID_CAR, &pkt, sizeof(DataMsg));
+      call AMSend.send(AM_BROADCAST_ADDR, &pkt, sizeof(DataMsg));
     }
   }
 
@@ -71,6 +72,7 @@ implementation {
     call ReadX.read();
     call ReadY.read();
     if (!buttonBusy) {
+      curPkt.buttonState = 0;
       call Button.pinvalueA();
       call Button.pinvalueB();
       call Button.pinvalueC();
@@ -93,7 +95,7 @@ implementation {
   }
 
   event void Button.pinvalueADone(error_t error) {
-      if (error) {
+      if (!error) {
         curPkt.buttonState |= PORT_A_BIT;
       }
       else {
@@ -102,7 +104,7 @@ implementation {
   }
 
   event void Button.pinvalueBDone(error_t error) {
-      if (error) {
+      if (!error) {
         curPkt.buttonState |= PORT_B_BIT;
       }
       else {
@@ -111,7 +113,7 @@ implementation {
   }
 
   event void Button.pinvalueCDone(error_t error) {
-      if (error) {
+      if (!error) {
         curPkt.buttonState |= PORT_C_BIT;
       }
       else {
@@ -120,16 +122,17 @@ implementation {
   }
 
   event void Button.pinvalueDDone(error_t error) {
-      if (error) {
+      /*if (!error) {
         curPkt.buttonState |= PORT_D_BIT;
       }
       else {
         curPkt.buttonState &= ~PORT_D_BIT;
-      }
+      }*/
+      curPkt.buttonState &= ~PORT_D_BIT;
   }
 
   event void Button.pinvalueEDone(error_t error) {
-      if (error) {
+      if (!error) {
         curPkt.buttonState |= PORT_E_BIT;
       }
       else {
@@ -138,7 +141,7 @@ implementation {
   }
 
   event void Button.pinvalueFDone(error_t error) {
-      if (error) {
+      if (!error) {
         curPkt.buttonState |= PORT_F_BIT;
       }
       else {
@@ -149,14 +152,36 @@ implementation {
   event void ReadX.readDone(error_t result, uint16_t data)
   {
     if (result == SUCCESS){
-      curPkt.JoyStickX = data;
+      if (data < 1000) {
+        curPkt.JoyStickX = STICK_RIGHT;
+      }
+      else if (data > 3000) {
+        curPkt.JoyStickX = STICK_LEFT;
+      }
+      else {
+        curPkt.JoyStickX = STICK_NONE;
+      }
+    }
+    else {
+      curPkt.JoyStickX = STICK_NONE;
     }
   }
 
   event void ReadY.readDone(error_t result, uint16_t data)
   {
     if (result == SUCCESS){
-      curPkt.JoyStickY = data;
+      if (data < 1000) {
+        curPkt.JoyStickY = STICK_FORWARD;
+      }
+      else if (data > 3000) {
+        curPkt.JoyStickY = STICK_BACK;
+      }
+      else {
+        curPkt.JoyStickY = STICK_NONE;
+      }
+    }
+    else {
+      curPkt.JoyStickY = STICK_NONE;
     }
   }
 
