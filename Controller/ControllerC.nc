@@ -24,7 +24,7 @@ implementation {
     //return !(curPkt.buttonState == oldPkt.buttonState);
     return !(curPkt.JoyStickX == oldPkt.JoyStickX &&
        curPkt.JoyStickY == oldPkt.JoyStickY &&
-       curPkt.buttonState == oldPkt.buttonState);
+       !(curPkt.buttonState & 63));
   }
 
   void SendPacket() {
@@ -152,6 +152,8 @@ implementation {
   event void ReadX.readDone(error_t result, uint16_t data)
   {
     if (result == SUCCESS){
+      printf("JoyStickX:%u\n", data);
+      printfflush();
       if (data < 1000) {
         curPkt.JoyStickX = STICK_RIGHT;
       }
@@ -170,6 +172,9 @@ implementation {
   event void ReadY.readDone(error_t result, uint16_t data)
   {
     if (result == SUCCESS){
+
+        printf("JoyStickY:%u\n", data);
+        printfflush();
       if (data < 1000) {
         curPkt.JoyStickY = STICK_FORWARD;
       }

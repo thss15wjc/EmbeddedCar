@@ -12,6 +12,7 @@ interface Car {
   command error_t Reset();
   // event void readDone(error_t state, uint16_t value);
   event void sendDone(error_t state);
+  event void startDone(error_t state);
   async event void debug();
   command error_t InitMaxSpeed(uint16_t value);
   command error_t InitMinSpeed(uint16_t value);
