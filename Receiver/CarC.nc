@@ -1,22 +1,17 @@
 #include <msp430usart.h>
+#include "printf.h"
 
 module CarC {
   uses interface HplMsp430Usart;
   uses interface HplMsp430GeneralIO as P20;
   uses interface Resource;
-  uses interface HplMsp430UsartInterrupts;
   provides interface Car;
 }
 
 implementation {
   uint8_t command_type;
   uint16_t command_value;
-  /*CommandMsg cmdBuf[COMMANDMSG_BUF_LEN];
-  CommandMsg curMsg, sendMsg;
-  uint8_t cmdIn = 0;
-  uint8_t cmdOut = 0;*/
-  bool cmdBusy = TRUE;
-  //bool cmdFull = TRUE;
+  bool start = FALSE;
 
   uint8_t sending_state;
   msp430_uart_union_config_t config1 = {
@@ -42,69 +37,31 @@ implementation {
   };
 
   command void Car.Start() {
-    /*cmdIn = 0;
-    cmdOut = 0;*/
-    cmdBusy = FALSE;
-    /*cmdFull = FALSE;*/
+    while (!(call Resource.request() == SUCCESS)) {
+    }
+    start = TRUE;
     sending_state = 0;
     signal Car.startDone(SUCCESS);
-  }
-
-  command error_t Car.Reset() {
-    call Car.Angle(2500);
-    return SUCCESS;
   }
 
   command error_t Car.Angle(uint16_t value) {
     command_type = TYPE_ANGLE_1;
     command_value = value;
-    if (!cmdBusy) {
-      if (call Resource.request() == SUCCESS) {
-        cmdBusy = TRUE;
-      }
-      else {
-        return FAIL;
-      }
-    }
-    /*if (!cmdFull) {
-      cmdBuf[cmdIn] = curMsg;
-      cmdIn = (cmdIn + 1) % COMMANDMSG_BUF_LEN;
-      if (cmdIn == cmdOut) {
-        cmdFull = TRUE;
-      }
-      if (!cmdBusy) {
-        call Resource.request();
-        cmdBusy = TRUE;
-      }
-    }*/
+    call Resource.request();
     return SUCCESS;
   }
 
   command error_t Car.Angle_Senc(uint16_t value) {
     command_type = TYPE_ANGLE_2;
     command_value = value;
-    if (!cmdBusy) {
-      if (call Resource.request() == SUCCESS) {
-        cmdBusy = TRUE;
-      }
-      else {
-        return FAIL;
-      }
-    }
+    call Resource.request();
     return SUCCESS;
   }
 
   command error_t Car.Angle_Third(uint16_t value) {
     command_type = TYPE_ANGLE_3;
     command_value = value;
-    if (!cmdBusy) {
-      if (call Resource.request() == SUCCESS) {
-        cmdBusy = TRUE;
-      }
-      else {
-        return FAIL;
-      }
-    }
+    call Resource.request();
     return SUCCESS;
   }
 
@@ -112,14 +69,7 @@ implementation {
     //command_type = TYPE_FORWARD;
     command_type = TYPE_LEFT;
     command_value = value;
-    if (!cmdBusy) {
-      if (call Resource.request() == SUCCESS) {
-        cmdBusy = TRUE;
-      }
-      else {
-        return FAIL;
-      }
-    }
+    call Resource.request();
     return SUCCESS;
   }
 
@@ -127,14 +77,7 @@ implementation {
     //command_type = TYPE_BACK;
     command_type = TYPE_RIGHT;
     command_value = value;
-    if (!cmdBusy) {
-      if (call Resource.request() == SUCCESS) {
-        cmdBusy = TRUE;
-      }
-      else {
-        return FAIL;
-      }
-    }
+    call Resource.request();
     return SUCCESS;
   }
 
@@ -142,14 +85,7 @@ implementation {
     //command_type = TYPE_LEFT;
     command_type = TYPE_BACK;
     command_value = value;
-    if (!cmdBusy) {
-      if (call Resource.request() == SUCCESS) {
-        cmdBusy = TRUE;
-      }
-      else {
-        return FAIL;
-      }
-    }
+    call Resource.request();
     return SUCCESS;
   }
 
@@ -157,14 +93,7 @@ implementation {
     //command_type = TYPE_RIGHT;
     command_type = TYPE_FORWARD;
     command_value = value;
-    if (!cmdBusy) {
-      if (call Resource.request() == SUCCESS) {
-        cmdBusy = TRUE;
-      }
-      else {
-        return FAIL;
-      }
-    }
+    call Resource.request();
     return SUCCESS;
   }
 
@@ -175,14 +104,7 @@ implementation {
   command error_t Car.Pause() {
     command_type = TYPE_PAUSE;
     command_value = 0;
-    if (!cmdBusy) {
-      if (call Resource.request() == SUCCESS) {
-        cmdBusy = TRUE;
-      }
-      else {
-        return FAIL;
-      }
-    }
+    call Resource.request();
     return SUCCESS;
   }
 
@@ -210,18 +132,6 @@ implementation {
 
   task void send_done() {
     signal Car.sendDone(SUCCESS);
-  }
-
-  void prepare_command() {
-    call HplMsp430Usart.setModeUart(&config1);
-    call HplMsp430Usart.enableUart();
-    atomic U0CTL &= ~SYNC;
-    sending_state = 0;
-    //sendMsg = cmdBuf[cmdOut];
-    send_command();
-    call Resource.release();
-    cmdBusy = FALSE;
-    post send_done();
   }
 
   void send_command() {
@@ -255,23 +165,15 @@ implementation {
     }
     ++sending_state;
     if (sending_state < 8) {
-      while (!(call HplMsp430Usart.isTxEmpty() == SUCCESS)) {
-        // NOTHING TODO
+      while (!(call HplMsp430Usart.isTxEmpty())) {
+        printf("waiting\n");
       }
+      printf("wait SUCCESS\n");
+      printfflush();
       send_command();
     }
     else {
-      /*call Resource.release();
-      signal Car.sendDone(SUCCESS);
-      cmdOut = (cmdOut + 1) % COMMANDMSG_BUF_LEN;
-      if (cmdFull) {
-        cmdFull = FALSE;
-      }
-      if (cmdIn == cmdOut && !cmdFull) {
-        cmdBusy = FALSE;
-        return;
-      }
-      prepare_command();*/
+      sending_state = 0;
     }
   }
 
@@ -281,15 +183,18 @@ implementation {
   default async event void Car.debug() {
   }
 
-  async event void HplMsp430UsartInterrupts.txDone() {
-    signal Car.debug();
-  }
-
-  async event void HplMsp430UsartInterrupts.rxDone(uint8_t data) {
-    // NOTHING TODO
-  }
-
   event void Resource.granted() {
-    prepare_command();
+    if (!start) {
+      call Resource.release();
+    }
+    else {
+      call HplMsp430Usart.setModeUart(&config1);
+      call HplMsp430Usart.enableUart();
+      atomic U0CTL &= ~SYNC;
+      sending_state = 0;
+      send_command();
+      call Resource.release();
+      post send_done();
+    }
   }
 }

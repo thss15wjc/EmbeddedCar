@@ -1,6 +1,7 @@
 #include "Msp430Adc12.h"
 #include "../EmbeddedCar.h"
 #include <Timer.h>
+#include "printf.h"
 
 module ReceiverC {
   uses interface Boot;
@@ -9,16 +10,14 @@ module ReceiverC {
   uses interface SplitControl as AMControl;
   uses interface Car;
   uses interface Timer<TMilli> as Timer0;
-  uses interface Timer<TMilli> as Timer1;
 }
 
 implementation {
   message_t pkt;
   uint16_t angle_now_hor, angle_now_ver;
-  uint8_t state, joyX, joyY;
-  uint8_t reset_status = 0;
+  nx_uint8_t state, joyStickState;
   uint8_t start_count = 0;
-  bool command_busy = FALSE;
+  bool cmdBusy = TRUE;
   event void Boot.booted() {
     call AMControl.start();
   }
@@ -27,8 +26,8 @@ implementation {
     if (err == SUCCESS) {
       call Car.Start();
       call Leds.led0On();
-      angle_now_hor = 2500;
-      angle_now_ver = 2500;
+      angle_now_hor = 3000;
+      angle_now_ver = 3000;
     }
     else {
       call AMControl.start();
@@ -36,13 +35,10 @@ implementation {
   }
 
   event void Car.startDone(error_t err) {
-    start_count = 0;
-    while (call Car.Forward(500) == FAIL) {
-      // NOTHING TODO
-    }
     start_count = 1;
     call Leds.led1Toggle();
-    //call Timer0.startPeriodic(TIMER_CAR_AUTO);
+    cmdBusy = TRUE;
+    call Timer0.startPeriodic(TIMER_CAR_AUTO);
   }
 
   event void AMControl.stopDone(error_t err) {
@@ -51,120 +47,71 @@ implementation {
   void start_reset();
 
   event message_t* Receive.receive(message_t* msg, void* payload, uint8_t len){
-    printfflush();
-    if (len == sizeof(DataMsg)) {
+    if (len == sizeof(DataMsg) && !cmdBusy) {
       DataMsg* dataMsg = (DataMsg*)payload;
       state = dataMsg->buttonState;
-      joyX = dataMsg->JoyStickX;
-      joyY = dataMsg->JoyStickY;
-    	printf("JoyStickX:%u, JoyStickY: %u, ButtonState: %u\n", dataMsg->JoyStickX, dataMsg->JoyStickY, dataMsg->buttonState);
-      printf("%u %u\n", angle_now_hor, angle_now_ver);
-    	printfflush();
-      //call Leds.led1Toggle();
-      /*if (!command_busy) {
-        command_busy = TRUE;
-        call Timer0.startPeriodic(TIMER_CAR);*/
-        if (state & PORT_C_BIT) {
-          start_reset();
-          //call Car.Pause();
+      joyStickState = dataMsg->joyStickState;
+      printf("btn:%u joy:%u\n", state, joyStickState);
+      printfflush();
+      call Leds.led1Toggle();
+      if (state & PORT_C_BIT) {
+        start_reset();
+      }
+      else if (state & PORT_A_BIT) {
+        if (angle_now_hor > 700) {
+          angle_now_hor -= ANGLE_SPEED;
+          call Car.Angle(angle_now_hor);
         }
-        else if (state & PORT_A_BIT) {
-          if (angle_now_hor > 700) {
-            angle_now_hor -= ANGLE_SPEED;
-            call Car.Angle(angle_now_hor);
-          }
-        }
-        else if (state & PORT_B_BIT) {
-          if (angle_now_hor < 4300) {
-            angle_now_hor += ANGLE_SPEED;
-            call Car.Angle(angle_now_hor);
-          }
-        }
-        else if (state & PORT_E_BIT) {
-          if (angle_now_hor > 700) {
-            angle_now_ver -= ANGLE_SPEED;
-            call Car.Angle_Senc(angle_now_ver);
-          }
-        }
-        else if (state & PORT_F_BIT) {
-          if (angle_now_ver < 4300) {
-            angle_now_ver += ANGLE_SPEED;
-            call Car.Angle_Senc(angle_now_ver);
-          }
-        }
-        else if (state & PORT_D_BIT) {
-          call Car.Reset();
-        }
-        else {
-          if (joyY == STICK_NONE && joyX == STICK_NONE) {
-            call Car.Pause();
-          }
-          else {
-            if (joyX == STICK_LEFT) {
-              call Car.Left(500);
-            }
-            else if (joyX == STICK_RIGHT) {
-              call Car.Right(500);
-            }
-            if (joyY == STICK_FORWARD) {
-              call Car.Forward(500);
-            }
-            else if (joyY == STICK_BACK) {
-              call Car.Back(500);
-            }
-          }
-        }
-      //}
-      /*if (state & PORT_A_BIT) {
-        call Car.Forward(500);
-        //A is right
       }
       else if (state & PORT_B_BIT) {
-        call Car.Back(500);
-        //b is left
-      }
-      else if (state & PORT_C_BIT) {
-        call Car.Left(500);
-        //c is forward
-      }
-      else if (state & PORT_D_BIT) {
+        if (angle_now_hor < 4300) {
+          angle_now_hor += ANGLE_SPEED;
+          call Car.Angle(angle_now_hor);
+        }
       }
       else if (state & PORT_E_BIT) {
-        call Car.Pause();
+        if (angle_now_hor > 700) {
+          angle_now_ver -= ANGLE_SPEED;
+          call Car.Angle_Senc(angle_now_ver);
+        }
       }
       else if (state & PORT_F_BIT) {
-        call Car.Right(500);
-        //f is backward
-      }*/
+        if (angle_now_ver < 4300) {
+          angle_now_ver += ANGLE_SPEED;
+          call Car.Angle_Senc(angle_now_ver);
+        }
+      }
+      else {
+          if (joyStickState == STICK_NONE) {
+            call Car.Pause();
+          }
+          else if (joyStickState == STICK_LEFT) {
+            call Car.Left(500);
+          }
+          else if (joyStickState == STICK_RIGHT) {
+            call Car.Right(500);
+          }
+          if (joyStickState == STICK_FORWARD) {
+            call Car.Forward(500);
+          }
+          else if (joyStickState == STICK_BACK) {
+            call Car.Back(500);
+          }
+      }
     }
     return msg;
   }
 
   void start_reset() {
     start_count = 11;
+    angle_now_hor = 3000;
+    angle_now_ver = 3000;
+    cmdBusy = TRUE;
     call Timer0.startPeriodic(RESET_TIMER_INTERVAL);
-  }
-
-  event void Timer1.fired() {
-    reset_status++;
-    if (reset_status == 2) {
-      call Car.Angle(3400);
-    }
-    else if (reset_status == 3) {
-      call Car.Angle_Senc(3400);
-    }
-    else if (reset_status == 4) {
-      call Car.Angle_Third(3400);
-      call Timer1.stop();
-    }
-    printf("reset: %u\n", reset_status);
-    printfflush();
   }
 
   event void Timer0.fired() {
     start_count++;
-    printf("%u\n", start_count);
-    printfflush();
     if (start_count <= CAR_WAIT) {
       return;
     }
@@ -189,12 +136,13 @@ implementation {
     } else if (start_count == CAR_WAIT + 10) {
       call Timer0.startPeriodic(RESET_TIMER_INTERVAL);
     } else if (start_count == CAR_WAIT + 11) {
-      call Car.Angle(3400);
+      call Car.Angle_Senc(3000);
     } else if (start_count == CAR_WAIT + 12) {
-      call Car.Angle_Senc(3400);
+      call Car.Angle(3000);
     } else if (start_count == CAR_WAIT + 13) {
-      call Car.Angle_Third(3400);
+      call Car.Angle_Third(3000);
       call Timer0.stop();
+      cmdBusy = FALSE;
     }
   }
 

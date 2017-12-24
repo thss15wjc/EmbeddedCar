@@ -13,7 +13,6 @@ implementation {
 
   CarC.P20 -> GIO.Port20;
   CarC.HplMsp430Usart -> HplMsp430Usart0C.HplMsp430Usart;
-  CarC.HplMsp430UsartInterrupts -> HplMsp430Usart0C.HplMsp430UsartInterrupts;
   CarC.Resource -> Msp430Usart0C.Resource;
   Car = CarC.Car;
 }

@@ -9,7 +9,6 @@ interface Car {
   command error_t Right(uint16_t value);
   command error_t QuiryReader(uint8_t value);
   command error_t Pause();
-  command error_t Reset();
   // event void readDone(error_t state, uint16_t value);
   event void sendDone(error_t state);
   event void startDone(error_t state);

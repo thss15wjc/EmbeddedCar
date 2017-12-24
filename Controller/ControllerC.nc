@@ -18,12 +18,32 @@ implementation {
   message_t pkt;
   DataMsg curPkt;
   DataMsg oldPkt;
+  uint16_t JoyStickX, JoyStickY;
   bool buttonBusy = TRUE;
 
+  void set_joy_stick_state() {
+    if (JoyStickX > 1000 && JoyStickX < 3000 && JoyStickY > 1000 && JoyStickY < 3000) {
+      curPkt.joyStickState = STICK_NONE;
+    }
+    else if (JoyStickX > 3000 && JoyStickY > 4500 - JoyStickX && JoyStickY < JoyStickX) {
+      curPkt.joyStickState = STICK_LEFT;
+    }
+    else if (JoyStickX < 1000 && JoyStickY < 4500 - JoyStickX && JoyStickY > JoyStickX) {
+      curPkt.joyStickState = STICK_RIGHT;
+    }
+    else if (JoyStickY < 1000 && JoyStickX < 4500 - JoyStickY && JoyStickY < JoyStickX) {
+      curPkt.joyStickState = STICK_FORWARD;
+    }
+    else if (JoyStickY > 3000 && JoyStickX > 4500 - JoyStickY && JoyStickY > JoyStickX) {
+      curPkt.joyStickState = STICK_BACK;
+    }
+    else {
+      curPkt.joyStickState = STICK_NONE;
+    }
+  }
+
   bool check_send() {
-    //return !(curPkt.buttonState == oldPkt.buttonState);
-    return !(curPkt.JoyStickX == oldPkt.JoyStickX &&
-       curPkt.JoyStickY == oldPkt.JoyStickY &&
+    return !(curPkt.joyStickState == oldPkt.joyStickState &&
        !(curPkt.buttonState & 63));
   }
 
@@ -31,15 +51,14 @@ implementation {
     DataMsg * collectPacket;
     if (check_send()) {
       oldPkt = curPkt;
-    	printf("JoyStickX:%u, JoyStickY: %u, ButtonState: %u\n", curPkt.JoyStickX, curPkt.JoyStickY, curPkt.buttonState);
+      printf("JoyStickState:%u\n", curPkt.joyStickState);
     	printfflush();
       call Leds.led2Toggle();
       collectPacket = (DataMsg*)(call Packet.getPayload(&pkt, sizeof(DataMsg)));
       if (collectPacket == NULL) {
         return;
       }
-      collectPacket->JoyStickX = curPkt.JoyStickX;
-      collectPacket->JoyStickY = curPkt.JoyStickY;
+      collectPacket->joyStickState = curPkt.joyStickState;
       collectPacket->buttonState = curPkt.buttonState;
       call AMSend.send(AM_BROADCAST_ADDR, &pkt, sizeof(DataMsg));
     }
@@ -51,6 +70,11 @@ implementation {
 
   event void AMControl.startDone(error_t err) {
     if (err == SUCCESS) {
+      oldPkt.buttonState = 0;
+      oldPkt.joyStickState = STICK_NONE;
+      curPkt.buttonState = 0;
+      curPkt.joyStickState = STICK_NONE;
+      call Leds.led1On();
       call Timer0.startPeriodic(TIMER_PERIOD_MILLI);
       call Button.start();
     }
@@ -72,7 +96,6 @@ implementation {
     call ReadX.read();
     call ReadY.read();
     if (!buttonBusy) {
-      curPkt.buttonState = 0;
       call Button.pinvalueA();
       call Button.pinvalueB();
       call Button.pinvalueC();
@@ -80,7 +103,10 @@ implementation {
       call Button.pinvalueE();
       call Button.pinvalueF();
     }
-    SendPacket();
+    atomic {
+      set_joy_stick_state();
+      SendPacket();
+    }
   }
 
   event void AMControl.stopDone(error_t err) {
@@ -152,30 +178,8 @@ implementation {
   event void ReadX.readDone(error_t result, uint16_t data)
   {
     if (result == SUCCESS){
-      printf("JoyStickX:%u\n", data);
-      printfflush();
-      if (data < 1000) {
-        curPkt.JoyStickX = STICK_RIGHT;
-      }
-      else if (data > 3000) {
-        curPkt.JoyStickX = STICK_LEFT;
-      }
-      else {
-        curPkt.JoyStickX = STICK_NONE;
-      }
-    }
-    else {
-      curPkt.JoyStickX = STICK_NONE;
-    }
-  }
-
-  event void ReadY.readDone(error_t result, uint16_t data)
-  {
-    if (result == SUCCESS){
-
-        printf("JoyStickY:%u\n", data);
-        printfflush();
-      if (data < 1000) {
+      JoyStickX = data;
+      /*if (data < 1000) {
         curPkt.JoyStickY = STICK_FORWARD;
       }
       else if (data > 3000) {
@@ -183,11 +187,30 @@ implementation {
       }
       else {
         curPkt.JoyStickY = STICK_NONE;
-      }
+      }*/
     }
-    else {
+    /*else {
       curPkt.JoyStickY = STICK_NONE;
+    }*/
+  }
+
+  event void ReadY.readDone(error_t result, uint16_t data)
+  {
+    if (result == SUCCESS){
+      JoyStickY = data;
+      /*if (data < 1000) {
+        curPkt.JoyStickX = STICK_RIGHT;
+      }
+      else if (data > 3000) {
+        curPkt.JoyStickX = STICK_LEFT;
+      }
+      else {
+        curPkt.JoyStickX = STICK_NONE;
+      }*/
     }
+    /*else {
+      curPkt.JoyStickX = STICK_NONE;
+    }*/
   }
 
   event void AMSend.sendDone(message_t* msg, error_t err) {

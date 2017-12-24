@@ -20,13 +20,12 @@ enum {
     STICK_LEFT = 1,
     STICK_RIGHT = 2,
     STICK_NONE = 0,
-    STICK_FORWARD = 1,
-    STICK_BACK = 2,
-    ANGLE_SPEED = 500,
-    TIMER_CAR = 1000,
-    TIMER_PERIOD_MILLI = 200,
+    STICK_FORWARD = 3,
+    STICK_BACK = 4,
+    ANGLE_SPEED = 300,
+    TIMER_PERIOD_MILLI = 100,
     TIMER_CAR_AUTO = 2000,
-    RESET_TIMER_INTERVAL = 200,
+    RESET_TIMER_INTERVAL = 100,
     CAR_WAIT = 1,
     //COMMANDMSG_BUF_LEN = 12
 };
@@ -37,8 +36,7 @@ enum {
 } CommandMsg;*/
 
 typedef nx_struct DataMsg {
-  nx_uint8_t JoyStickX;
-  nx_uint8_t JoyStickY;
+  nx_uint8_t joyStickState;
   nx_uint8_t buttonState;
 } DataMsg;
 
